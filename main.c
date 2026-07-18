@@ -4,18 +4,21 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+// https://en.wikipedia.org/wiki/Ray_tracing_(graphics)#/media/File:Ray_Tracing_Illustration_First_Bounce.png
 // TODO: pointer?
 Color ray_color(const Ray r);
 bool hit_sphere(const Vector3 center, float radius, const Ray r);
 
 bool hit_sphere(const Vector3 center, float radius, const Ray r) {
 
-        const Vector3 oc = Vector3Subtract(center, r.position);
-        const float a    = Vector3DotProduct(r.direction, r.direction);
-        const float b    = Vector3DotProduct(Vector3Scale(oc, -2.0), r.direction);
-        const float c    = Vector3DotProduct(oc, oc) - (radius * radius);
+        RayCollision rc = GetRayCollisionSphere(r, center, radius);
+        return rc.hit;
+        /* const Vector3 oc = Vector3Subtract(center, r.position); */
+        /* const float a    = Vector3DotProduct(r.direction, r.direction); */
+        /* const float b    = Vector3DotProduct(Vector3Scale(oc, -2.0), r.direction); */
+        /* const float c    = Vector3DotProduct(oc, oc) - (radius * radius); */
 
-        return ((b * b) >= (4 * a * c));
+        /* return ((b * b) >= (4 * a * c)); */
 }
 
 Color ray_color(const Ray r) {
@@ -81,7 +84,8 @@ int main(void) {
                                                                    Vector3Scale(pixel_delta_v, (float) j))); 
                                 Vector3 ray_direction = Vector3Subtract(pixel_center, camera_center);
 
-                                Ray r   = (Ray) {camera_center, ray_direction};
+                                /* Ray r   = (Ray) {camera_center, ray_direction}; */
+                                Ray r   = (Ray) {ray_direction, camera_center};
                                 Color c = ray_color(r);
                         
                                 DrawPixel(i, j, c);
