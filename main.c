@@ -9,11 +9,10 @@ int image_height = 256;
 
 int main(void)
 {
-        InitWindow(image_width, image_height, "Hello World");
+        InitWindow(image_width, image_height, "Ray Tracing in One Weekend - Listing 1");
 
         while (!WindowShouldClose()) {
                 BeginDrawing();
-                /* ClearBackground(RAYWHITE); */
 
                 for (int j = 0; j < image_height; j++) {
                         for (int i = 0; i < image_width; i++) {
@@ -30,7 +29,6 @@ int main(void)
                         }
 
                 }
-                /* asm("int3"); */
 
                 EndDrawing();
         }
