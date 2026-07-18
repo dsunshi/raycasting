@@ -1,0 +1,9 @@
+
+* Raytracing
+** Progress thus far [2/2]
+- [X] [[https://raytracing.github.io/books/RayTracingInOneWeekend.html#outputanimage][Listing 1]]
+- [X] [[https://raytracing.github.io/books/RayTracingInOneWeekend.html#outputanimage][Listing 9]]
+** References
+- [[https://raytracing.github.io/][Ray Tracing in One Weekend]]
+- [[file:/usr/local/include/raylib.h][raylib.h]]
+- [[file:/usr/local/include/raymath.h][raymath.h]]

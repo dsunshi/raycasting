@@ -6,11 +6,27 @@
 
 // TODO: pointer?
 Color ray_color(const Ray r);
+bool hit_sphere(const Vector3 center, float radius, const Ray r);
+
+bool hit_sphere(const Vector3 center, float radius, const Ray r) {
+
+        const Vector3 oc = Vector3Subtract(center, r.position);
+        const float a    = Vector3DotProduct(r.direction, r.direction);
+        const float b    = Vector3DotProduct(Vector3Scale(oc, -2.0), r.direction);
+        const float c    = Vector3DotProduct(oc, oc) - (radius * radius);
+
+        return ((b * b) >= (4 * a * c));
+}
 
 Color ray_color(const Ray r) {
+        if (hit_sphere((const Vector3) {0.0, 0.0, -1.0}, 0.5, r)) {
+                return RED;
+        }
+
         Vector3 unit_direction = Vector3Normalize(r.direction);
         double  a = 0.5 * (unit_direction.y + 1.0);
         Vector3 c = Vector3Add( Vector3Scale( Vector3One(), 1.0 - a), Vector3Scale((Vector3){0.5, 0.7, 1.0}, a));
+
         return ColorFromNormalized((Vector4) {c.x, c.y, c.z, 1.0});
 }
 
@@ -22,7 +38,7 @@ int main(void) {
         const int image_height    = (int) (image_width / aspect_ratio);
 
         // Viewport
-        const float viewport_height = 2.0; // Arbitrary
+        const float viewport_height = 3.0; // Arbitrary (higher number "zooms out"
         const float viewport_width  = viewport_height * ((float) (image_width / image_height));
 
         // Camera (right-handed coordinates)
@@ -36,19 +52,24 @@ int main(void) {
         Vector3 camera_center = Vector3Zero();
 
         Vector3 viewport_u = (Vector3) {viewport_width, 0.0, 0.0};
-        Vector3 viewport_v = (Vector3) {0.0, -viewport_height, 0.0};
+        // TODO: Why the `/ aspect_ratio`?
+        Vector3 viewport_v = (Vector3) {0.0, -viewport_height / aspect_ratio, 0.0};
 
         Vector3 pixel_delta_u = Vector3Scale(viewport_u, (float) (1.0 / image_width));
         Vector3 pixel_delta_v = Vector3Scale(viewport_v, (float) (1.0 / image_height));
 
         /* // Calculate the location of the upper left pixel. */
-        Vector3 viewport_upper_left = Vector3Subtract( camera_center,
-                                        Vector3Add( (Vector3) {0.0, 0.0, focal_length},
-                                          Vector3Add( Vector3Scale(viewport_u, 0.5),
-                                                      Vector3Scale(viewport_v, 0.5))));
+        // TODO I think these should be the same? Maybe some kind of check?
+        /* Vector3 viewport_upper_left = Vector3Subtract( camera_center, */
+        /*                                 Vector3Add( (Vector3) {0.0, 0.0, focal_length}, */
+        /*                                   Vector3Add( Vector3Scale(viewport_u, 0.5), */
+        /*                                               Vector3Scale(viewport_v, 0.5)))); */
+        Vector3 viewport_upper_left = Vector3Subtract(
+                                      Vector3Subtract(
+                                      Vector3Subtract(camera_center, (Vector3) {0.0, 0.0, focal_length}),Vector3Scale(viewport_u, 0.5)), Vector3Scale(viewport_v, 0.5));
         Vector3 pixel00_loc = Vector3Add(viewport_upper_left, Vector3Scale( Vector3Add( pixel_delta_u, pixel_delta_v), 0.5));
 
-        InitWindow(image_width, image_height, "Ray Tracing in One Weekend - Listing 9");
+        InitWindow(image_width, image_height, "Ray Tracing in One Weekend - Image 3: A simple red sphere");
 
         while (!WindowShouldClose()) {
                 BeginDrawing();
