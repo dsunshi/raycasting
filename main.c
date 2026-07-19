@@ -7,23 +7,24 @@
 // https://en.wikipedia.org/wiki/Ray_tracing_(graphics)#/media/File:Ray_Tracing_Illustration_First_Bounce.png
 // TODO: pointer?
 Color ray_color(const Ray r);
-bool hit_sphere(const Vector3 center, float radius, const Ray r);
-
-bool hit_sphere(const Vector3 center, float radius, const Ray r) {
-
-        RayCollision rc = GetRayCollisionSphere(r, center, radius);
-        return rc.hit;
-        /* const Vector3 oc = Vector3Subtract(center, r.position); */
-        /* const float a    = Vector3DotProduct(r.direction, r.direction); */
-        /* const float b    = Vector3DotProduct(Vector3Scale(oc, -2.0), r.direction); */
-        /* const float c    = Vector3DotProduct(oc, oc) - (radius * radius); */
-
-        /* return ((b * b) >= (4 * a * c)); */
-}
 
 Color ray_color(const Ray r) {
-        if (hit_sphere((const Vector3) {0.0, 0.0, -1.0}, 0.5, r)) {
-                return RED;
+        Vector3 co   = (Vector3) {0.0, 0.0, -1.0};
+        float radius = 0.5;
+        
+        RayCollision rc = GetRayCollisionSphere(r, co, radius);
+        if (rc.hit) {
+                Vector3 at = Vector3Add(r.position, Vector3Scale(r.direction, -1.0));
+                /* Vector3 n  = Vector3Normalize(Vector3Subtract(at, (Vector3) {0.0, 0.0, -1.0})); */
+                /* return ColorFromNormalized((Vector4) {(n.x + 1.0)/2.0, (n.y + 1.0)/2.0, (n.z + 1.0)/2.0, 1.0}); */
+                /* Vector3 normal   = (Vector3) { 0.0f, 0.0f, -1.0f }; */
+                Vector3 view_dir = Vector3Normalize(Vector3Subtract(r.direction, r.position));
+
+                /* float dot = Vector3DotProduct(normal, view_dir); */
+                float dot = Vector3DotProduct(rc.normal, view_dir);
+                if (dot > 0.0f) {
+                        return ColorFromNormalized((Vector4) {(view_dir.x + 1.0)/2.0, (view_dir.y + 1.0)/2.0, (view_dir.z + 1.0)/2.0, 1.0});
+                }
         }
 
         Vector3 unit_direction = Vector3Normalize(r.direction);
