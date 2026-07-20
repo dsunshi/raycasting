@@ -1,17 +1,45 @@
 
 #include "raylib.h"
 #include "raymath.h"
-#include "stdio.h"
-#include "stdlib.h"
+/* #include "stdio.h" */
+/* #include "stdlib.h" */
+
+#define USE_RAY_MATH false
 
 // https://en.wikipedia.org/wiki/Ray_tracing_(graphics)#/media/File:Ray_Tracing_Illustration_First_Bounce.png
 // TODO: pointer?
 Color ray_color(const Ray r);
+    /* point3 at(double t) const { */
+    /*     return orig + t*dir; */
+    /* } */
+Vector3 at(Ray r, float t);
+
+Vector3 at(Ray r, float t) {
+        return Vector3Add(r.position, Vector3Scale(r.direction, t));
+}
+
+float hit_sphere(const Vector3 center, float radius, const Ray r);
+
+float hit_sphere(const Vector3 center, float radius, const Ray r) {
+
+        const Vector3 oc = Vector3Subtract(center, r.position);
+        const float a    = Vector3DotProduct(r.direction, r.direction);
+        const float b    = Vector3DotProduct(Vector3Scale(oc, -2.0), r.direction);
+        const float c    = Vector3DotProduct(oc, oc) - (radius * radius);
+        const float discriminant = (b * b) - 4 * a *c;
+
+        if (discriminant < 0) {
+                return -1.0;
+        } else {
+                return (-b - sqrtf(discriminant) ) / (2.0 * a);
+        }
+}
 
 Color ray_color(const Ray r) {
         Vector3 co   = (Vector3) {0.0, 0.0, -1.0};
         float radius = 0.5;
         
+#if USE_RAY_MATH
         RayCollision rc = GetRayCollisionSphere(r, co, radius);
         if (rc.hit) {
                 Vector3 at = Vector3Add(r.position, Vector3Scale(r.direction, -1.0));
@@ -26,7 +54,13 @@ Color ray_color(const Ray r) {
                         return ColorFromNormalized((Vector4) {(view_dir.x + 1.0)/2.0, (view_dir.y + 1.0)/2.0, (view_dir.z + 1.0)/2.0, 1.0});
                 }
         }
-
+#else
+        float t = hit_sphere(co, radius, r);
+        if (t > 0.0) {
+                Vector3 N = Vector3Normalize(Vector3Subtract(at(r, t), co));
+                return ColorFromNormalized((Vector4) {(N.x + 1.0)/2.0, (N.y + 1.0)/2.0, (N.z + 1.0)/2.0, 1.0});
+        }
+#endif
         Vector3 unit_direction = Vector3Normalize(r.direction);
         double  a = 0.5 * (unit_direction.y + 1.0);
         Vector3 c = Vector3Add( Vector3Scale( Vector3One(), 1.0 - a), Vector3Scale((Vector3){0.5, 0.7, 1.0}, a));
@@ -73,7 +107,7 @@ int main(void) {
                                       Vector3Subtract(camera_center, (Vector3) {0.0, 0.0, focal_length}),Vector3Scale(viewport_u, 0.5)), Vector3Scale(viewport_v, 0.5));
         Vector3 pixel00_loc = Vector3Add(viewport_upper_left, Vector3Scale( Vector3Add( pixel_delta_u, pixel_delta_v), 0.5));
 
-        InitWindow(image_width, image_height, "Ray Tracing in One Weekend - Image 3: A simple red sphere");
+        InitWindow(image_width, image_height, "Ray Tracing in One Weekend - Image 4: A sphere colored according to its normal vectors");
 
         while (!WindowShouldClose()) {
                 BeginDrawing();
@@ -85,8 +119,11 @@ int main(void) {
                                                                    Vector3Scale(pixel_delta_v, (float) j))); 
                                 Vector3 ray_direction = Vector3Subtract(pixel_center, camera_center);
 
-                                /* Ray r   = (Ray) {camera_center, ray_direction}; */
+#if USE_RAY_MATH
                                 Ray r   = (Ray) {ray_direction, camera_center};
+#else
+                                Ray r   = (Ray) {camera_center, ray_direction};
+#endif
                                 Color c = ray_color(r);
                         
                                 DrawPixel(i, j, c);
