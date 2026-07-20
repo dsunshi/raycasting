@@ -23,15 +23,15 @@ float hit_sphere(const Vector3 center, float radius, const Ray r);
 float hit_sphere(const Vector3 center, float radius, const Ray r) {
 
         const Vector3 oc = Vector3Subtract(center, r.position);
-        const float a    = Vector3DotProduct(r.direction, r.direction);
-        const float b    = Vector3DotProduct(Vector3Scale(oc, -2.0), r.direction);
-        const float c    = Vector3DotProduct(oc, oc) - (radius * radius);
-        const float discriminant = (b * b) - 4 * a *c;
+        float a = Vector3LengthSqr(r.direction);
+        float h = Vector3DotProduct(r.direction, oc);
+        float c = Vector3LengthSqr(oc) - radius * radius;
+        float discriminant = h * h - a * c;
 
         if (discriminant < 0) {
                 return -1.0;
         } else {
-                return (-b - sqrtf(discriminant) ) / (2.0 * a);
+                return (h - sqrtf(discriminant) ) / a;
         }
 }
 
